@@ -3,7 +3,6 @@ import requests
 import plotly.graph_objects as go
 import pandas as pd
 
-@st.cache_data
 def get_data(sheet_name):
     # Fetch data from the Google Apps Script API using the specified sheet name
     url = f'https://script.google.com/macros/s/AKfycbyArX-VqTB_BGt_iRJ-2vCPu1mfY4McZw85m7XJu6nOeXvwt1suVoCwAhPdYlNdRrQn/exec?sheet={sheet_name}'
