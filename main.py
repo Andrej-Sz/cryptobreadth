@@ -3,6 +3,43 @@ import requests
 import plotly.graph_objects as go
 import pandas as pd
 
+def create_header():
+    st.markdown("""
+        <style>
+        .header {
+            background-color: #0D1824;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            font-size: 64px;
+            font-weight: bold;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 20px; /* Tiny space above the text */
+        }
+        .stApp {
+            padding-top: 80px;
+        }
+        </style>
+        <div class="header">
+            Crypto Breadth & Speculation Index
+        </div>
+        """, unsafe_allow_html=True)
+
+def set_background():
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: #1D2B3A;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+@st.cache_data(ttl=600)
 def get_data(sheet_name):
     # Fetch data from the Google Apps Script API using the specified sheet name
     url = f'https://script.google.com/macros/s/AKfycbyArX-VqTB_BGt_iRJ-2vCPu1mfY4McZw85m7XJu6nOeXvwt1suVoCwAhPdYlNdRrQn/exec?sheet={sheet_name}'
@@ -11,9 +48,8 @@ def get_data(sheet_name):
 
 # Configure the Streamlit page layout to be wide
 st.set_page_config(layout = "wide")
-
-# Title of the dashboard
-st.markdown("<h1 style='text-align: center;'>Crypto Breadth & Speculation Index</h1>", unsafe_allow_html=True)
+create_header()
+set_background()
 
 # Separator
 st.write("---")
@@ -44,9 +80,10 @@ with col2:
         ('SMA', 'EMA', 'RSI')  # Options available in the dropdown
     )
 
+response = get_data("API_DATA")
+
 if True:  # Using True to always enter the block (could be removed for clarity)
     try:
-        response = get_data("API_data")  # Get data from the API
         data = response.json()  # Parse the response as JSON
         dates = data["date"]  # Extract date values
         sma50 = data["50sma"]  # Extract 50-period SMA values
@@ -151,6 +188,100 @@ if True:  # Using True to always enter the block (could be removed for clarity)
         # Handle any errors that occur during data fetching or processing
         st.error(f"Error fetching data: {e}")
 
+if not (option == "RSI"):
+
+    st.markdown("<h1 style='text-align: center;'>Breadth Difference</h1>", unsafe_allow_html=True)
+    st.markdown(
+        """
+    <p style='text-align: center;'>
+        Breadth Difference is calculated as MA50 - MA200 (The type of MA depends on the choice in the select box above)
+    </p>
+        """,
+        unsafe_allow_html=True)
+
+    try:
+        data = response.json()
+        dates = data["date"]
+        sma50 = data["50sma"]  # Extract 50-period SMA values
+        sma200 = data["200sma"]  # Extract 200-period SMA values
+        ema50 = data["50ema"]  # Extract 50-period EMA values
+        ema200 = data["200ema"]  # Extract 200-period EMA values
+        btc = data["btc"]  # Extract BTC price 
+        
+        # Calculate the Breadth Spread
+        sma_ratio = [s50 - s200 for s50, s200 in zip(sma50, sma200)]
+        ema_ratio = [e50 - e200 for e50, e200 in zip(ema50, ema200)]
+
+        fig1 = go.Figure()
+
+        if option == 'SMA':
+            # Plot SMA50 and SMA200 if SMA is selected
+            fig1.add_trace(go.Scatter(
+                x=dates, y=sma_ratio, 
+                mode='lines', 
+                name='SMA Spread', 
+                line=dict(color='green', width=2),  
+                yaxis='y1'  # First y-axis
+            ))
+
+        elif option == 'EMA':
+            # Plot EMA50 and EMA200 if EMA is selected
+            fig1.add_trace(go.Scatter(
+                x=dates, y=ema_ratio, 
+                mode='lines', 
+                name='EMA Spread', 
+                line=dict(color='pink', width=2),  
+                yaxis='y1'  # First y-axis
+            ))
+
+                # Plot BTC on the secondary y-axis regardless of the selection
+        fig1.add_trace(go.Scatter(
+            x=dates, y=btc, 
+            mode='lines', 
+            name='BTC', 
+            line=dict(color='orange', width=2),  
+            yaxis='y2'  # Second y-axis
+        ))
+
+            # Customize layout for two y-axes, with the second being logarithmic
+        fig1.update_layout(
+            width=1000,  # Set width of the plot
+            height=600,  # Set height of the plot
+            xaxis_title="Date",  # Title for the x-axis
+            yaxis_title="Breadth Spread",  # Title for the first y-axis
+            xaxis=dict(
+                tickformat="%Y-%m-%d",  # Format for x-axis ticks
+                tickangle=-45,  # Angle for x-axis tick labels
+                rangeslider=dict(
+                    visible=True,
+                    bgcolor="lightgray",  # Set slider background color to gray
+                    thickness=0.1,  # Adjust thickness of the slider
+                    borderwidth=1,  # Optionally add border to slider
+                    bordercolor="gray",  # Border color to match gray theme
+                ),
+                type="date",  # Ensure it's a date-based slider
+            ),
+            yaxis=dict(
+                title="Breadth Spread",  # Title for the first y-axis
+                showgrid=True,  # Show grid lines
+                zeroline=True  # Show the zero line
+            ),
+            yaxis2=dict(
+                title="BTC Price (Log Scale)",  # Title for the second y-axis
+                overlaying='y',  # Overlay on the first y-axis
+                side='right',  # Position the second y-axis on the right
+                type="log",  # Set y-axis to logarithmic scale
+                showgrid=False,  # Hide grid lines for the second y-axis
+                zeroline=False  # Hide the zero line for the second y-axis
+            ),
+        )
+
+        st.plotly_chart(fig1, use_container_width=True)
+
+    except Exception as e:
+        # Handle any errors that occur during data fetching or processing
+        st.error(f"Error fetching data: {e}")
+
 st.write("---")
 
 # Subtitle for the Robust Speculation Index section
@@ -161,7 +292,6 @@ st.markdown("<p style='text-align: center;'>Robust Speculation Index is calculat
 
 if True:  # Using True to always enter the block (could be removed for clarity)
     try:
-        response = get_data("API_data")  # Get data from the API
         data = response.json()  # Parse the response as JSON
         dates = data["date"]  # Extract date values
         spec = data["spec"]  # Extract speculation index values
@@ -238,7 +368,9 @@ df = pd.DataFrame({
     "200 SMA": sma200,  # 200-period SMA column
     "50 EMA": ema50,  # 50-period EMA column
     "200 EMA": ema200,  # 200-period EMA column
-    "50 RSI": rsi50  # 50-period RSI column
+    "50 RSI": rsi50,  # 50-period RSI column
+    "SMA Dif": sma_ratio,
+    "EMA Dif": ema_ratio
 })
 
 # Provide the option to download the data as a CSV file
