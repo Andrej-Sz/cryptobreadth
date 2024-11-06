@@ -24,6 +24,7 @@ def create_header():
         .stApp {
             padding-top: 80px;
         }
+
         </style>
         <div class="header">
             Crypto Breadth & Speculation Index
@@ -55,12 +56,12 @@ set_background()
 st.write("---")
 
 # Subtitle for the Crypto Breadth section
-st.markdown("<h1 style='text-align: center;'>Crypto Breadth</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: white;'>Crypto Breadth</h1>", unsafe_allow_html=True)
 
 # Description of Crypto Breadth
 st.markdown(
     """
-    <p style='text-align: center;'>
+    <p style='text-align: center; color: white;;'>
         Market Breadth is a measure for strength in equities markets. 
         Crypto Breadth applies the Market Breadth formula for equities to 195 Altcoins. 
         1 indicates all coins are above the corresponding metrics, 
@@ -77,7 +78,7 @@ col1, col2, col3 = st.columns([5, 1, 5])  # Define three columns with specified 
 with col2:
     option = st.selectbox(
         'Select score calculation type:',  # Dropdown menu for selecting calculation type
-        ('SMA', 'EMA', 'RSI')  # Options available in the dropdown
+        ('SMA', 'EMA', 'RSI'),  # Options available in the dropdown
     )
 
 response = get_data("API_DATA")
@@ -179,6 +180,9 @@ if True:  # Using True to always enter the block (could be removed for clarity)
                 showgrid=False,  # Hide grid lines for the second y-axis
                 zeroline=False  # Hide the zero line for the second y-axis
             ),
+            plot_bgcolor="black",  # Set plot area background color
+            paper_bgcolor="black",  # Set the surrounding (paper) background color
+            font=dict(color="white")  # Set font color to white for visibility on dark background
         )
 
         # Display the interactive plot in Streamlit
@@ -190,10 +194,10 @@ if True:  # Using True to always enter the block (could be removed for clarity)
 
 if not (option == "RSI"):
 
-    st.markdown("<h1 style='text-align: center;'>Breadth Difference</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: white;'>Breadth Difference</h1>", unsafe_allow_html=True)
     st.markdown(
         """
-    <p style='text-align: center;'>
+    <p style='text-align: center; color: white;'>
         Breadth Difference is calculated as MA50 - MA200 (The type of MA depends on the choice in the select box above)
     </p>
         """,
@@ -274,6 +278,9 @@ if not (option == "RSI"):
                 showgrid=False,  # Hide grid lines for the second y-axis
                 zeroline=False  # Hide the zero line for the second y-axis
             ),
+            plot_bgcolor="black",  # Set plot area background color
+            paper_bgcolor="black",  # Set the surrounding (paper) background color
+            font=dict(color="white")  # Set font color to white for visibility on dark background
         )
 
         st.plotly_chart(fig1, use_container_width=True)
@@ -285,10 +292,10 @@ if not (option == "RSI"):
 st.write("---")
 
 # Subtitle for the Robust Speculation Index section
-st.markdown("<h1 style='text-align: center;'>Robust Speculation Index</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: white;;'>Robust Speculation Index</h1>", unsafe_allow_html=True)
 
 # Description of the Robust Speculation Index
-st.markdown("<p style='text-align: center;'>Robust Speculation Index is calculated as the percentage of altcoins with 75-day, 80-day, 85-day, 90-day, 95-day, 100-day, 105-day returns greater than Bitcoin. High readings suggest mounting speculation. Lower readings suggest capitulation, and potentially greater investment opportunities in altcoins. 1 = all periods have greater returns than BTC, 0 = not all periods have greater returns than BTC.</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: white;'>Robust Speculation Index is calculated as the percentage of altcoins with 75-day, 80-day, 85-day, 90-day, 95-day, 100-day, 105-day returns greater than Bitcoin. High readings suggest mounting speculation. Lower readings suggest capitulation, and potentially greater investment opportunities in altcoins. 1 = all periods have greater returns than BTC, 0 = not all periods have greater returns than BTC.</p>", unsafe_allow_html=True)
 
 if True:  # Using True to always enter the block (could be removed for clarity)
     try:
@@ -349,6 +356,9 @@ if True:  # Using True to always enter the block (could be removed for clarity)
                 showgrid=False,  # Hide grid lines for the second y-axis
                 zeroline=False  # Hide the zero line for the second y-axis
             ),
+            plot_bgcolor="black",  # Set plot area background color
+            paper_bgcolor="black",  # Set the surrounding (paper) background color
+            font=dict(color="white")  # Set font color to white for visibility on dark background
         )
 
         # Display the interactive plot in Streamlit
@@ -361,16 +371,28 @@ if True:  # Using True to always enter the block (could be removed for clarity)
 st.write("---")
 
 # Prepare data for CSV download
-df = pd.DataFrame({
-    "Date": dates,  # Date column
-    "BTC Price": btc,  # BTC price column
-    "50 SMA": sma50,  # 50-period SMA column
-    "200 SMA": sma200,  # 200-period SMA column
-    "50 EMA": ema50,  # 50-period EMA column
-    "200 EMA": ema200,  # 200-period EMA column
-    "50 RSI": rsi50,  # 50-period RSI column
-    "SMA Dif": sma_ratio,
-    "EMA Dif": ema_ratio
+if not (option == "RSI"):
+    df = pd.DataFrame({
+        "Date": dates,  # Date column
+        "BTC Price": btc,  # BTC price column
+        "50 SMA": sma50,  # 50-period SMA column
+        "200 SMA": sma200,  # 200-period SMA column
+        "50 EMA": ema50,  # 50-period EMA column
+        "200 EMA": ema200,  # 200-period EMA column
+        "50 RSI": rsi50,  # 50-period RSI column
+        "SMA Dif": sma_ratio,
+        "EMA Dif": ema_ratio
+})
+
+elif (option == "RSI"):
+    df = pd.DataFrame({
+        "Date": dates,  # Date column
+        "BTC Price": btc,  # BTC price column
+        "50 SMA": sma50,  # 50-period SMA column
+        "200 SMA": sma200,  # 200-period SMA column
+        "50 EMA": ema50,  # 50-period EMA column
+        "200 EMA": ema200,  # 200-period EMA column
+        "50 RSI": rsi50,  # 50-period RSI column
 })
 
 # Provide the option to download the data as a CSV file
