@@ -55,7 +55,7 @@ set_background()
 # Separator
 st.write("---")
 
-st.markdown("<h2 style='text-align: center; color: white;'><a href="https://trw-toolbox.streamlit.app/Crypto-Breadth">This app was moved and will soon be disabled. Click to be redirected to the new app</a></h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: white;'><a href='https://trw-toolbox.streamlit.app/Crypto-Breadth'>This app was moved and will soon be disabled. Click to be redirected to the new app</a></h2>", unsafe_allow_html=True)
 
 st.write("---")
 
